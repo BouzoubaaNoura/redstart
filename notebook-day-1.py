@@ -213,6 +213,14 @@ def _(mo):
     return
 
 
+@app.cell
+def _():
+    l=1
+    M=1
+    g=1
+    return M, l
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(
@@ -225,6 +233,24 @@ def _(mo):
     return
 
 
+@app.cell
+def _(mo):
+    mo.center(mo.image(src="public\images\schema simplificatif.png"))
+    return
+
+
+@app.cell
+def _(np):
+    #on faisant des projections sur la base(x,y)
+    def calculate_force_components(theta, phi, f): 
+        angle_rad = np.radians(phi + theta)  
+        fx = f * np.sin(angle_rad)
+        fy = f * np.cos(angle_rad)
+        return fx, fy
+
+    return (calculate_force_components,)
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(
@@ -234,6 +260,24 @@ def _(mo):
     Give the ordinary differential equation that governs $(x, y)$.
     """
     )
+    return
+
+
+@app.cell
+def _(M, calculate_force_components):
+    #d'après la PFD on trouve:
+    #F=M*a
+    #or F=f+P
+    #et f=(fx,fy)
+    #P=(0,-M*g)
+    def funDE(angle,g):
+        theta,phi=angle
+        f=calculate_force_components(theta,phi,g)
+        P=(0,-M*g)
+        d2x=f[0]/M
+        d2y=f[1]/M -g
+        return d2x,d2y
+
     return
 
 
@@ -249,6 +293,14 @@ def _(mo):
     return
 
 
+@app.cell
+def _(M, l):
+    #d'après les hypothèses de l'uniformité de masse et de rigidité du tube  on obtient:
+    #J=1/12*M*L^2
+    J=1/3 *M*l^2
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(
@@ -258,6 +310,15 @@ def _(mo):
     Give the ordinary differential equation that governs the tilt angle $\theta$.
     """
     )
+    return
+
+
+@app.cell
+def _(M, l, np):
+    #d'apres la PFD:
+    def tilt(f,theta, phi):
+        d2theta=3/(M*l)*f*np.sin(phi)
+        return d2theta
     return
 
 
