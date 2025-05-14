@@ -235,20 +235,27 @@ def _(mo):
 
 @app.cell
 def _(mo):
-    mo.center(mo.image(src="public\images\schema simplificatif.png"))
+    mo.center(mo.image(src="public/images/schema simplificatif.png"))
     return
 
 
 @app.cell
-def _(np):
-    #on faisant des projections sur la base(x,y)
-    def calculate_force_components(theta, phi, f): 
-        angle_rad = np.radians(phi + theta)  
-        fx = f * np.sin(angle_rad)
-        fy = f * np.cos(angle_rad)
-        return fx, fy
+def _(mo):
+    mo.md(
+        r"""
+    En projetant la force \( f \) selon les angles \( \theta \) et \( \varphi \), on obtient :
 
-    return (calculate_force_components,)
+    $$
+    f_x = f \cdot \sin(\theta + \varphi)
+    $$
+
+    $$
+    f_y = f \cdot \cos(\theta + \varphi)
+    $$
+
+    """
+    )
+    return
 
 
 @app.cell(hide_code=True)
@@ -264,20 +271,60 @@ def _(mo):
 
 
 @app.cell
-def _(M, calculate_force_components):
-    #d'après la PFD on trouve:
-    #F=M*a
-    #or F=f+P
-    #et f=(fx,fy)
-    #P=(0,-M*g)
-    def funDE(angle,g):
-        theta,phi=angle
-        f=calculate_force_components(theta,phi,g)
-        P=(0,-M*g)
-        d2x=f[0]/M
-        d2y=f[1]/M -g
-        return d2x,d2y
+def _(mo):
+    mo.md(
+        r"""
+    En appliquant la **deuxième loi de Newton** au propulseur, on obtient :
 
+    $$
+    M \cdot \frac{d\vec{v}}{dt} = \vec{F}_{\text{réacteur}} + \vec{P}
+    $$
+
+    où :  
+    - \( \vec{F}_{\text{réacteur}} \) est la force de poussée générée par le réacteur,  
+    - \( \vec{P} \) représente le poids du propulseur.
+
+    ---
+
+    En projetant cette équation sur le repère global \( (x, y) \), on obtient :
+
+    $$
+    \begin{cases}
+    M \cdot \ddot{x}(t) = f_x \\
+    M \cdot \ddot{y}(t) = f_y - M \cdot g
+    \end{cases}
+    $$
+
+    avec :  
+    - \( \ddot{x}(t) \) et \( \ddot{y}(t) \) les composantes de l'accélération du centre de masse,  
+    - \( f_x \) et \( f_y \) les composantes de la force du réacteur dans le repère global,  
+    - \( M = 1\, \text{kg} \) la masse du propulseur,  
+    - \( g = 1\, \text{m/s}^2 \) l'accélération gravitationnelle.
+
+    ---
+
+    D'après la question précédente, les composantes de la force s’écrivent :
+
+    $$
+    \begin{cases}
+    f_x = f \cdot \sin(\theta + \varphi) \\
+    f_y = f \cdot \cos(\theta + \varphi)
+    \end{cases}
+    $$
+
+    ---
+
+    En remplaçant dans le système précédent, et en utilisant \( M = 1 \) et \( g = 1 \), on obtient les **équations différentielles ordinaires (EDO)** qui régissent la position \( (x(t), y(t)) \) du centre de masse :
+
+    $$
+    \begin{cases}
+    \ddot{x}(t) = f \cdot \sin(\theta + \varphi) \\
+    \ddot{y}(t) = f \cdot \cos(\theta + \varphi) - 1
+    \end{cases}
+    $$
+
+    """
+    )
     return
 
 
@@ -294,10 +341,23 @@ def _(mo):
 
 
 @app.cell
-def _(M, l):
-    #d'après les hypothèses de l'uniformité de masse et de rigidité du tube  on obtient:
-    #J=1/12*M*L^2
-    J=1/3 *M*l^2
+def _(mo):
+    mo.md(
+        r"""
+    D'après les hypothèses d'uniformité de masse et de rigidité du tube, on obtient :
+
+    $$
+    J = \frac{1}{12} M \cdot L^2
+    $$
+
+    Ainsi on trouve:
+
+    $$
+    J = \frac{1}{3} M \cdot l^2
+    $$
+
+    """
+    )
     return
 
 
@@ -363,6 +423,11 @@ def _(mo):
     Test this typical example with your function `redstart_solve` and check that its graphical output makes sense.
     """
     )
+    return
+
+
+@app.cell
+def _():
     return
 
 
