@@ -475,7 +475,7 @@ def _(mo):
                             rtol=1e-6, atol=1e-9)
         return solution.sol  
     ```
-    On appliquant le code sur l'example de freefall function on trouve: 
+    On appliquant la fonction redstart_solve sur l'example de freefall function: 
 
     ```python
     def free_fall_example():
@@ -497,6 +497,7 @@ def _(mo):
 
     free_fall_example() 
     ```
+    On trouve:
 
     """
     )
@@ -508,9 +509,9 @@ def _(np, plt):
     from scipy.integrate import solve_ivp
 
     def redstart_solve(t_span, y0, f_phi, M=1.0, l=1.0, g=1):
-    
+
         def dynamics(t, y):
-        
+
             x, dx, y, dy, theta, dtheta = y
             f, phi = f_phi(t, y)
 
@@ -527,7 +528,7 @@ def _(np, plt):
                             dense_output=True,
                             rtol=1e-6, atol=1e-9)
         return solution.sol
-    
+
     def free_fall_example():
         t_span = [0.0, 5.0]
         y0 = [0.0, 0.0, 10.0, 0.0, 0.0, 0.0]  # [x, dx, y, dy, theta, dtheta]
@@ -545,7 +546,8 @@ def _(np, plt):
         plt.legend()
         plt.show()
 
-    free_fall_example() 
+    free_fall_example()
+
     return
 
 
@@ -558,6 +560,63 @@ def _(mo):
     Assume that $x$, $\dot{x}$, $\theta$ and $\dot{\theta}$ are null at $t=0$. For $y(0)= 10$ and $\dot{y}(0)$, can you find a time-varying force $f(t)$ which, when applied in the booster axis ($\theta=0$), yields $y(5)=\ell$ and $\dot{y}(5)=0$?
 
     Simulate the corresponding scenario to check that your solution works as expected.
+    """
+    )
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+    D'après les résultats précédents, on a trouvé que :
+
+    $$
+    \ddot{y} = \frac{f}{M} \cdot \cos(\theta + \varphi) - g
+    $$
+
+    avec 
+
+    $$
+    \theta=0
+    $$
+
+    D'autre part, on a :
+
+    $$
+    y(t) = a t^3 + b t^2 + c t + d
+    $$
+
+    Avec les coefficients suivants :
+
+    $$
+    a = \frac{8}{125}, \quad b = -\frac{7}{25}, \quad c = -2, \quad d = 10
+    $$
+
+    En dérivant deux fois, on obtient :
+
+    $$
+    \ddot{y}(t) = 6a t + 2b = \frac{48}{125} t - \frac{14}{25}
+    $$
+
+    En remplaçant dans l'équation précédente, on obtient :
+
+    $$
+    \frac{f}{M} \cdot \cos(\varphi) = \frac{48}{125} t - \frac{14}{25} + g
+    $$
+
+    Donc :
+
+    $$
+    f = \left( \frac{48}{125} t - \frac{14}{25} + g \right) \cdot \frac{M}{\cos(\varphi)}
+    $$
+
+    Et en posant \( M = 1 \) kg et \( g = 1 \, \text{m/s}^2 \), on a :
+
+    $$
+    f = \left( \frac{48}{125} t + \frac{11}{25} \right) \cdot \frac{1}{\cos( \varphi)}
+    $$
+
     """
     )
     return
@@ -592,6 +651,18 @@ def _(mo):
     The function shall accept the parameters `x`, `y`, `theta`, `f` and `phi`.
     """
     )
+    return
+
+
+@app.cell
+def _(np):
+    def draw_flame(ax, x, y, theta, f, phi, M=1.0, g=1.0, l=1.0):
+        flame_length = l * f / (M * g)
+        flame_angle = theta + phi + np.pi
+        x_end = x + flame_length * np.cos(flame_angle)
+        y_end = y + flame_length * np.sin(flame_angle)
+        ax.plot([x, x_end], [y, y_end], color="orange", linewidth=3)
+
     return
 
 
