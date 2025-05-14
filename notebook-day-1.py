@@ -218,7 +218,7 @@ def _():
     l=1
     M=1
     g=1
-    return M, l
+    return
 
 
 @app.cell(hide_code=True)
@@ -374,11 +374,30 @@ def _(mo):
 
 
 @app.cell
-def _(M, l, np):
-    #d'apres la PFD:
-    def tilt(f,theta, phi):
-        d2theta=3/(M*l)*f*np.sin(phi)
-        return d2theta
+def _(mo):
+    mo.md(
+        r"""
+    D'après le **principe fondamental de la dynamique**, on a :
+
+    $$
+    J \cdot \ddot{\theta} = \sigma
+    $$
+
+    Or :
+
+    $$
+    \sigma = l \cdot f \cdot \sin(\varphi) \\
+    J = \frac{1}{3} M \cdot l^2
+    $$
+
+    Ainsi, on obtient :
+
+    $$
+    \ddot{\theta} = 3\cdot\frac{f \cdot \sin(\varphi)}{ M \cdot l}
+    $$
+
+    """
+    )
     return
 
 
@@ -427,7 +446,37 @@ def _(mo):
 
 
 @app.cell
-def _():
+def _(mo):
+    mo.md(
+        r"""
+    ```python
+
+    from scipy.integrate import solve_ivp
+
+    def redstart_solve(t_span, y0, f_phi, M=1.0, l=1.0, g=1):
+    
+        def dynamics(t, y):
+        
+            x, dx, y, dy, theta, dtheta = y
+            f, phi = f_phi(t, y)
+
+            # Compute accelerations
+            ddx = (f/M) * np.sin(theta + phi)
+            ddy = (f/M) * np.cos(theta + phi) - g
+            ddtheta = (3 * f * np.sin(phi)) / (M * l)
+
+            return [dx, ddx, dy, ddy, dtheta, ddtheta]
+
+        # Solve the ODE system
+        solution = solve_ivp(dynamics, t_span, y0,
+                            t_eval=np.linspace(t_span[0], t_span[1], 1000),
+                            dense_output=True,
+                            rtol=1e-6, atol=1e-9)
+        return solution.sol
+    ```
+
+    """
+    )
     return
 
 
