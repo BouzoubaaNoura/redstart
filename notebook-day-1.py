@@ -449,6 +449,7 @@ def _(mo):
 def _(mo):
     mo.md(
         r"""
+
     ```python
 
     from scipy.integrate import solve_ivp
@@ -472,11 +473,79 @@ def _(mo):
                             t_eval=np.linspace(t_span[0], t_span[1], 1000),
                             dense_output=True,
                             rtol=1e-6, atol=1e-9)
-        return solution.sol
+        return solution.sol  
+    ```
+    On appliquant le code sur l'example de freefall function on trouve: 
+
+    ```python
+    def free_fall_example():
+        t_span = [0.0, 5.0]
+        y0 = [0.0, 0.0, 10.0, 0.0, 0.0, 0.0]  # [x, dx, y, dy, theta, dtheta]
+        def f_phi(t, y):
+            return np.array([0.0, 0.0])  # No thrust, no gimbal
+        sol = redstart_solve(t_span, y0, f_phi)
+        t = np.linspace(t_span[0], t_span[1], 1000)
+        y_t = sol(t)[2]  # Extract height (y) over time
+        plt.plot(t, y_t, label=r"$y(t)$ (height in meters)")
+        plt.plot(t, 1.0 * np.ones_like(t), color="grey", ls="--", label=r"$y=\ell$")
+        plt.title("Free Fall of Redstart Booster")
+        plt.xlabel("Time $t$ (seconds)")
+        plt.ylabel("Height $y$ (meters)")
+        plt.grid(True)
+        plt.legend()
+        plt.show()
+
+    free_fall_example() 
     ```
 
     """
     )
+    return
+
+
+@app.cell
+def _(np, plt):
+    from scipy.integrate import solve_ivp
+
+    def redstart_solve(t_span, y0, f_phi, M=1.0, l=1.0, g=1):
+    
+        def dynamics(t, y):
+        
+            x, dx, y, dy, theta, dtheta = y
+            f, phi = f_phi(t, y)
+
+            # Compute accelerations
+            ddx = (f/M) * np.sin(theta + phi)
+            ddy = (f/M) * np.cos(theta + phi) - g
+            ddtheta = (3 * f * np.sin(phi)) / (M * l)
+
+            return [dx, ddx, dy, ddy, dtheta, ddtheta]
+
+        # Solve the ODE system
+        solution = solve_ivp(dynamics, t_span, y0,
+                            t_eval=np.linspace(t_span[0], t_span[1], 1000),
+                            dense_output=True,
+                            rtol=1e-6, atol=1e-9)
+        return solution.sol
+    
+    def free_fall_example():
+        t_span = [0.0, 5.0]
+        y0 = [0.0, 0.0, 10.0, 0.0, 0.0, 0.0]  # [x, dx, y, dy, theta, dtheta]
+        def f_phi(t, y):
+            return np.array([0.0, 0.0])  # No thrust, no gimbal
+        sol = redstart_solve(t_span, y0, f_phi)
+        t = np.linspace(t_span[0], t_span[1], 1000)
+        y_t = sol(t)[2]  # Extract height (y) over time
+        plt.plot(t, y_t, label=r"$y(t)$ (height in meters)")
+        plt.plot(t, 1.0 * np.ones_like(t), color="grey", ls="--", label=r"$y=\ell$")
+        plt.title("Free Fall of Redstart Booster")
+        plt.xlabel("Time $t$ (seconds)")
+        plt.ylabel("Height $y$ (meters)")
+        plt.grid(True)
+        plt.legend()
+        plt.show()
+
+    free_fall_example() 
     return
 
 
