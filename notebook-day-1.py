@@ -218,7 +218,7 @@ def _():
     l=1
     M=1
     g=1
-    return
+    return M, g, l
 
 
 @app.cell(hide_code=True)
@@ -548,7 +548,7 @@ def _(np, plt):
 
     free_fall_example()
 
-    return
+    return redstart_solve, solve_ivp
 
 
 @app.cell(hide_code=True)
@@ -622,6 +622,41 @@ def _(mo):
     return
 
 
+@app.cell
+def _(np, plt, redstart_solve):
+
+    # Define f(t) and phi(t)
+    def f_phi(t, y):
+        f_t = ((48/125)*t + (11/25))
+        phi_t = 0
+        return np.array([f_t, phi_t])
+
+    # Initial conditions [x, dx, y, dy, theta, dtheta]
+    y0 = [0.0, 0.0, 10.0, -2.0, 0.0, 0.0]
+
+    # Simulate from t=0 to t=5
+    sol = redstart_solve([0, 5], y0, f_phi)
+    t_eval = np.linspace(0, 5, 1000)
+    y_t = sol(t_eval)[2]  # Extract y(t)
+
+    # Plot
+    plt.plot(t_eval, y_t, label=r"$y(t)$ (height)")
+    plt.axhline(y=1.0, color="grey", linestyle="--", label=r"$y=\ell$")
+    plt.scatter([5], [1], color="red", label="Target: $y(5)=1$")
+    plt.title("Soft Landing with $f(t) = \\frac{48}{125}t + \\frac{11}{25}$")
+    plt.xlabel("Time $t$ (s)")
+    plt.ylabel("Height $y$ (m)")
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+
+    # Check final conditions
+    y_final = sol(5)[2:4]  # [y(5), dy(5)]
+    print(f"Final height y(5) = {y_final[0]:.6f} m")
+    print(f"Final velocity dy(5) = {y_final[1]:.6f} m/s")
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(
@@ -655,14 +690,64 @@ def _(mo):
 
 
 @app.cell
-def _(np):
-    def draw_flame(ax, x, y, theta, f, phi, M=1.0, g=1.0, l=1.0):
-        flame_length = l * f / (M * g)
-        flame_angle = theta + phi + np.pi
-        x_end = x + flame_length * np.cos(flame_angle)
-        y_end = y + flame_length * np.sin(flame_angle)
-        ax.plot([x, x_end], [y, y_end], color="orange", linewidth=3)
+def _(l, np, plt):
+    def draw_booster(x, y, theta, f, phi):
 
+        fig, ax = plt.subplots()
+    
+  
+        body_length = 2.0  
+        body_width = 0.2   
+        flame_width = 0.2   
+    
+
+        flame_length = (f / l) * (body_length/2)
+        body_center_x = x
+        body_center_y = y
+    
+
+        flame_start_x = x - 0.5 * body_length * np.cos(theta) - 0.5 * body_width * np.sin(theta)
+        flame_start_y = y - 0.5 * body_length * np.sin(theta) + 0.5 * body_width * np.cos(theta)
+    
+
+        flame_end_x = flame_start_x - flame_length * np.cos(theta + phi)
+        flame_end_y = flame_start_y - flame_length * np.sin(theta + phi)
+    
+
+        landing_zone_radius = 0.5
+        landing_zone = plt.Circle((0, 0), landing_zone_radius, color='green', alpha=0.3)
+        ax.add_patch(landing_zone)
+    
+
+        booster_body = plt.Rectangle((body_center_x - 0.5*body_length*np.cos(theta) - 0.5*body_width*np.sin(theta),
+                                     body_center_y - 0.5*body_length*np.sin(theta) + 0.5*body_width*np.cos(theta)),
+                                    body_length, body_width,
+                                    angle=np.degrees(theta), 
+                                    color='gray')
+        ax.add_patch(booster_body)
+    
+
+        flame_line, = ax.plot([flame_start_x, flame_end_x], 
+                             [flame_start_y, flame_end_y], 
+                             color='orange', linewidth=3)
+    
+
+        ax.set_aspect('equal')
+        ax.invert_xaxis() 
+        ax.set_xlim(max(x + 2, 2), min(x - 2, -2))
+        ax.set_ylim(min(y - 2, -2), max(y + 2, 2))
+    
+        plt.grid(True)
+    
+        plt.xlabel("Position X (axe vers la gauche)")
+        plt.ylabel("Position Y")
+        plt.show()
+
+    t = 1.0
+    phi = np.radians(1)
+    f = (48*t/125 + 11/25) * 1 / np.cos(phi)  
+
+    draw_booster(x=0, y=3, theta=np.radians(80), f=f, phi=phi)
     return
 
 
@@ -685,6 +770,85 @@ def _(mo):
     As an intermediary step, you can begin with production of image snapshots of the booster location (every 1 sec).
     """
     )
+    return
+
+
+@app.cell
+def _():
+    return
+
+
+@app.cell
+def _(FFMpegWriter, FuncAnimation, M, g, l, mo, np, plt, solve_ivp, tqdm):
+
+
+    J = (1/3) * M * (2*l)**2
+
+    def constant_force(f_val, phi_val):
+        return lambda t, y: (f_val, phi_val)
+
+
+    def dynamics(t, y, f_func):
+        x, dx, y_pos, dy, theta, dtheta = y
+        f, phi = f_func(t, y)
+
+        fx = f * np.sin(theta + phi)
+        fy = f * np.cos(theta + phi)
+
+        ddx = fx / M
+        ddy = fy / M - g
+        ddtheta = -l * f * np.sin(phi) / J
+
+        return [dx, ddx, dy, ddy, dtheta, ddtheta]
+
+    # Simulation
+    def simulate_booster(f_val, phi_val):
+        y0 = [0, 0, 10, 0, 0, 0]
+        t_span = (0, 5)
+        t_eval = np.linspace(*t_span, 100)
+        f_phi = constant_force(f_val, phi_val)
+        sol = solve_ivp(lambda t, y: dynamics(t, y, f_phi), t_span, y0, t_eval=t_eval)
+        return sol
+
+    # Animation + vidéo
+    def make_vide(output):
+        sol = simulate_booster(M * g, np.pi / 8)
+        t_eval = sol.t
+        x_vals = sol.y[0]
+        y_vals = sol.y[2]
+        theta_vals = sol.y[4]
+        num_frames = len(t_eval)
+
+        fig = plt.figure(figsize=(6, 6))
+        fps = 20
+
+        def animate(i):
+            plt.clf()
+            x = x_vals[i]
+            y = y_vals[i]
+            theta = theta_vals[i]
+            x1 = x - l * np.sin(theta)
+            y1 = y - l * np.cos(theta)
+            x2 = x + l * np.sin(theta)
+            y2 = y + l * np.cos(theta)
+
+            plt.plot([x1, x2], [y1, y2], "o-", lw=4)
+            plt.xlim(-2, 2)
+            plt.ylim(0, 12)
+            plt.grid(True)
+            plt.title(f"Booster (t = {t_eval[i]:.2f} s)")
+
+            pbar.update(1)
+
+        pbar = tqdm(total=num_frames, desc="Génération vidéo")
+        anim = FuncAnimation(fig, animate, frames=num_frames)
+        writer = FFMpegWriter(fps=fps)
+        anim.save(output, writer=writer)
+        print(f"Animation sauvegardée sous {output!r}")
+
+    _filename = "booster_animation.mp4"
+    make_vide(_filename)
+    mo.video(src=_filename)
     return
 
 
