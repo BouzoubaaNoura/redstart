@@ -1039,6 +1039,60 @@ def _(mo):
     return
 
 
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+    Linéarisation du modèle autour de l'équilibre
+
+    1. Variables de perturbation
+
+    On introduit les déviations autour de l’équilibre :
+
+    $$
+    \begin{aligned}
+    x &= x_{\text{eq}} + \Delta x \\
+    y &= y_{\text{eq}} + \Delta y \\
+    \theta &= 0 + \Delta \theta \\
+    f &= Mg + \Delta f \\
+    \varphi &= 0 + \Delta \varphi
+    \end{aligned}
+    $$
+
+    #### 2. Approximation de Taylor (petits angles)
+
+    $$
+    \begin{aligned}
+    \sin(\theta + \varphi) &\approx \theta + \varphi \\
+    \cos(\theta + \varphi) &\approx 1 \\
+    \sin(\varphi) &\approx \varphi
+    \end{aligned}
+    $$
+
+    #### 3. Équations du mouvement linéarisées
+
+    $$
+    \begin{cases}
+    M \ddot{\Delta x} = -(Mg+\Delta f)(\Delta \theta + \Delta \varphi) \\
+    M \ddot{\Delta y} = \Delta f \\
+    J \ddot{\Delta \theta} = -L Mg \Delta \varphi
+    \end{cases}
+    $$
+
+    Dans le voisinage de l'équilibre, on néglige le produit $(\Delta f \cdot \theta)$ , ainsi on trouve: 
+
+    $$
+    \begin{cases}
+     \ddot{\Delta x} = -g(\Delta \theta + \Delta \varphi) \\
+    M \ddot{\Delta y} = \Delta f \\
+    J \ddot{\Delta \theta} = -L Mg \Delta \varphi
+    \end{cases}
+    $$
+    """
+    )
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(
