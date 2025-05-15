@@ -1135,9 +1135,9 @@ def _(mo):
 
     $$
     \begin{aligned}
-    \Delta \ddot{x} &= -g \Delta \theta - g \Delta \varphi \\
+    \Delta \ddot{x} &= -g \Delta \theta - g \Delta \phi \\
     \Delta \ddot{y} &= \frac{1}{M} \Delta f \\
-    \Delta \ddot{\theta} &= -\frac{3g}{\ell} \Delta \varphi
+    \Delta \ddot{\theta} &= -\frac{3g}{\ell} \Delta \phi
     \end{aligned}
     $$
 
@@ -1423,6 +1423,144 @@ def _(mo):
     $x(0)=0$, $\dot{x}(0)=0$, $\theta(0) = 45 / 180  \times \pi$  and $\dot{\theta}(0) =0$. What do you see? How do you explain it?
     """
     )
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+    ## Simulation et tracé de y(t) et θ(t) pour le modèle linéarisé
+
+    Nous considérons le modèle linéarisé complet suivant :
+
+    \[
+    \begin{aligned}
+    \Delta \ddot{x} &= -g (\Delta \theta + \Delta \phi) \\
+    \Delta \ddot{y} &= \frac{1}{M} \Delta f \\
+    \Delta \ddot{\theta} &= -\frac{3g}{\ell} \Delta \phi
+    \end{aligned}
+    \]
+
+    Sous les conditions :
+
+    - \( \phi(t) = 0 \)
+    - \( f(t) = Mg \Rightarrow \Delta f = 0 \)
+
+    ---
+
+    ## Simulation de \( x(t) \) et \( \theta(t) \)
+
+    ```python
+
+    from scipy.integrate import solve_ivp
+    def linearized_system(t, Z):
+        x, xdot, y, ydot, theta, thetadot = Z
+        dxdt = xdot
+        dxdotdt = -g * theta  
+        dydt = ydot
+        dydotdt = 0           
+        dthetadt = thetadot
+        dthetadotdt = 0       
+        return [dxdt, dxdotdt, dydt, dydotdt, dthetadt, dthetadotdt]
+
+
+    theta0 = np.pi / 4
+    Z0 = [0, 0, 0, 0, theta0, 0]  
+
+
+    t_span = (0, 10)
+    t_eval = np.linspace(*t_span, 500)
+    sol = solve_ivp(linearized_system, t_span, Z0, t_eval=t_eval)
+
+
+    t = sol.t
+    x = sol.y[0]
+    theta = sol.y[4]
+
+
+    plt.figure(figsize=(12, 5))
+
+    plt.subplot(1, 2, 1)
+    plt.plot(t, x, label="$x(t)$", color="blue")
+    plt.xlabel("Temps [s]")
+    plt.ylabel("Position latérale x(t)")
+    plt.title("Évolution de x(t)")
+    plt.grid()
+    plt.legend()
+
+    plt.subplot(1, 2, 2)
+    plt.plot(t, theta, label=r"$\theta(t)$", color="orange")
+    plt.xlabel("Temps [s]")
+    plt.ylabel("Angle d'inclinaison θ(t) [rad]")
+    plt.title("Évolution de θ(t)")
+    plt.grid()
+    plt.legend()
+
+    plt.tight_layout()
+    plt.show()
+    ```
+
+    ## Interprétation
+
+
+
+    """
+    )
+    return
+
+
+@app.cell
+def _(g, np, plt):
+
+    from scipy.integrate import solve_ivp
+
+    def linearized_system(t, Z):
+        x, xdot, y, ydot, theta, thetadot = Z
+        dxdt = xdot
+        dxdotdt = -g * theta  
+        dydt = ydot
+        dydotdt = 0           
+        dthetadt = thetadot
+        dthetadotdt = 0       
+        return [dxdt, dxdotdt, dydt, dydotdt, dthetadt, dthetadotdt]
+
+
+    theta0 = np.pi / 4
+    Z0 = [0, 0, 0, 0, theta0, 0]  
+
+
+    t_span = (0, 10)
+    t_eval = np.linspace(*t_span, 500)
+    sol = solve_ivp(linearized_system, t_span, Z0, t_eval=t_eval)
+
+
+    t = sol.t
+    x = sol.y[0]
+    theta = sol.y[4]
+
+
+    plt.figure(figsize=(12, 5))
+
+    plt.subplot(1, 2, 1)
+    plt.plot(t, x, label="$x(t)$", color="blue")
+    plt.xlabel("Temps [s]")
+    plt.ylabel("Position latérale x(t)")
+    plt.title("Évolution de x(t)")
+    plt.grid()
+    plt.legend()
+
+    plt.subplot(1, 2, 2)
+    plt.plot(t, theta, label=r"$\theta(t)$", color="orange")
+    plt.xlabel("Temps [s]")
+    plt.ylabel("Angle d'inclinaison θ(t) [rad]")
+    plt.title("Évolution de θ(t)")
+    plt.grid()
+    plt.legend()
+
+    plt.tight_layout()
+    plt.show()
+
     return
 
 
