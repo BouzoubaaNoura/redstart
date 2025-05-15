@@ -1292,7 +1292,7 @@ def _(A, B):
         return column_stack([matrix_power(A, k) @ B for k in range(n)])
     rank_C = matrix_rank(KCM(A, B))
     print("Rang de C :", rank_C)
-    return
+    return KCM, matrix_rank
 
 
 @app.cell(hide_code=True)
@@ -1307,6 +1307,109 @@ def _(mo):
     Check the controllability of this new system.
     """
     )
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+    Nous nous intéressons uniquement à la dynamique latérale du système, c’est-à-dire la position \( x \), l’angle d’inclinaison \( \theta \), et leurs dérivées.  
+    On suppose que :
+
+    - \( f = Mg \) (constante),
+    - Seul \( \phi \) est contrôlable.
+
+    ---
+
+    ## Matrices réduites du système
+
+    La dynamique réduite s’écrit avec les variables d’état :
+
+    \[
+    X = \begin{bmatrix}
+    \Delta x \\
+    \Delta \dot{x} \\
+    \Delta \theta \\
+    \Delta \dot{\theta}
+    \end{bmatrix},
+    \quad
+    U = \begin{bmatrix}
+    \Delta \phi
+    \end{bmatrix}
+    \]
+
+    \[
+    \dot{X} = A X + B U
+    \]
+
+    ```python
+    import numpy as np
+    from numpy.linalg import matrix_rank
+
+    g = 1      
+    l = 1      
+
+    # Matrice A réduite
+    A_red = np.array([
+        [0, 1, 0, 0],
+        [0, 0, -g, 0],
+        [0, 0, 0, 1],
+        [0, 0, 0, 0]
+    ])
+
+    # Matrice B réduite (contrôle uniquement via phi)
+    B_red = np.array([
+        [0],
+        [-g],
+        [0],
+        [-3 * g / l]
+    ])
+
+    # Matrice de contrôlabilité
+    def KCM(A, B):
+        return np.hstack([B, A @ B, A @ A @ B, A @ A @ A @ B])
+
+    C_red = KCM(A_red, B_red)
+    rank_red = matrix_rank(C_red)
+
+    print("Rang de C_red :", rank_red)
+    ```
+
+    ---
+
+     **Rang de la matrice de contrôlabilité :** 4  
+     Comme le rang est maximal (égal à la dimension de l’espace d’état),  **le système réduit est contrôlable**.
+
+    """
+    )
+    return
+
+
+@app.cell
+def _(KCM, g, l, matrix_rank, np):
+    # Matrices réduites
+
+    A_red = np.array([
+        [0, 1, 0, 0],
+        [0, 0, -g, 0],
+        [0, 0, 0, 1],
+        [0, 0, 0, 0]
+    ])
+
+    B_red = np.array([
+        [0],
+        [-g],
+        [0],
+        [-3*g/l]
+    ])
+
+
+
+    C_red = KCM(A_red, B_red)
+    rank_red = matrix_rank(C_red)
+
+    print("Rang de C_red :", rank_red)
     return
 
 
