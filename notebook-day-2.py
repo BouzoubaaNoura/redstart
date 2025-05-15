@@ -1605,7 +1605,7 @@ def _(g, np, plt):
     plt.tight_layout()
     plt.show()
 
-    return
+    return solve_ivp, t_eval
 
 
 @app.cell(hide_code=True)
@@ -1863,7 +1863,7 @@ def _(mo):
 
 
 @app.cell
-def _(g, l, np):
+def _(g, l, np, plt, solve_ivp, t_eval):
     from scipy.linalg import solve_continuous_are
 
     # System matrices (g=1, l=1)
@@ -1885,6 +1885,33 @@ def _(g, l, np):
     # Compute optimal gain
     K_oc = B3.T @ P  # Or (1/R) * B.T @ P
     print("Optimal gain K_oc =", K_oc)
+    def closed_loop(t, x):
+        u = -K_oc @ x
+        return (A3 @ x + B3.flatten() * u).flatten()
+
+    # Conditions initiales : Δx, Δẋ, Δθ, Δθ̇
+    x0 = np.array([0, 0, np.pi/4, 0])
+
+    # Intégration
+    t_span2 = (0, 25)
+    t_eval3 = np.linspace(*t_span2, 500)
+    sol3 = solve_ivp(closed_loop, t_span2, x0, t_eval=t_eval3)
+
+    # Extraire Δθ(t)
+    theta3 = sol3.y[2, :]  # index 2 = Δθ
+
+    # Tracer Δθ(t)
+    plt.figure(figsize=(10, 5))
+    plt.plot(t_eval, theta3, label=r'$\Delta \theta(t)$', color='blue')
+    plt.axhline(np.pi/2, color='red', linestyle='--', alpha=0.3)
+    plt.axhline(-np.pi/2, color='red', linestyle='--', alpha=0.3)
+    plt.xlabel('Temps (s)')
+    plt.ylabel(r'$\Delta \theta(t)$')
+    plt.title('Évolution de Δθ(t) avec commande LQR')
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
     return
 
 
