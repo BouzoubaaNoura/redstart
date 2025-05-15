@@ -1110,7 +1110,7 @@ def _(mo):
 def _(mo):
     mo.md(
         r"""
-     Forme Standard (Espace d'État)
+     Forme Standard 
 
     Pour obtenir la forme standard \( \dot{X} = A X + B U \) du modèle linéarisé, on définit :
 
@@ -1184,6 +1184,30 @@ def _(mo):
     return
 
 
+@app.cell
+def _(M, g, l, np):
+    # Matrice A
+    A = np.array([
+        [0, 0, 0, 1, 0, 0],
+        [0, 0, 0, 0, 1, 0],
+        [0, 0, 0, 0, 0, 1],
+        [0, 0, -g, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0]
+    ])
+
+    # Matrice B
+    B = np.array([
+        [0, 0],
+        [0, 0],
+        [0, 0],
+        [0, -g],
+        [1/M, 0],
+        [0, -3*g/l]
+    ])
+    return A, B
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(
@@ -1204,7 +1228,7 @@ def _(mo):
 
     Pour déterminer si l'équilibre \((\theta = 0, \phi = 0, f = Mg)\) est asymptotiquement stable, nous analysons les valeurs propres de la matrice \(A\) du système linéarisé.
 
-    1. Matrice \(A\) du système linéarisé :
+    Matrice \(A\) du système linéarisé :
 
     \[
     A = \begin{bmatrix}
@@ -1245,7 +1269,33 @@ def _(mo):
 
 @app.cell
 def _(mo):
-    mo.md(r""" """)
+    mo.md(
+        r"""
+    On pose C = [B \ AB \ A^2B \ A^3B \ A^4B \ A^5B] 
+
+    Après calcul (par exemple avec NumPy), on trouve :  
+    \[
+    \text{rang}(\mathcal{C}) = 6
+    \]  
+
+    Donc, d'après Kalman Criterion Le système est  contrôlable.
+    """
+    )
+    return
+
+
+@app.cell
+def _(A, B):
+    from numpy import shape, column_stack
+    from numpy.linalg import matrix_power
+    from numpy.linalg import matrix_rank
+
+
+    def KCM(A, B):
+        n = shape(A)[0]  
+        return column_stack([matrix_power(A, k) @ B for k in range(n)])
+    rank_C = matrix_rank(KCM(A, B))
+    print("Rang de C :", rank_C)
     return
 
 
