@@ -1503,6 +1503,50 @@ def _(mo):
 
     ## Interprétation
 
+     1. Évolution de \( \theta(t) \)
+
+    \[
+    \theta(t) = \theta(0) = \frac{\pi}{4}
+    \]
+
+    reste **constante** dans le temps.
+
+     vu que;
+
+    - Le système est linéarisé autour de \( \phi = 0 \)
+    - Et on impose \( \phi(t) = 0 \Rightarrow \Delta \phi = 0 \)
+
+    D’où :
+
+    \[
+    \Delta \ddot{\theta} = -\frac{3g}{\ell} \Delta \phi = 0 \quad \Rightarrow \quad \dot{\theta} = \text{constante} \quad \Rightarrow \quad \theta = \text{constante}
+    \]
+
+    2. Évolution de \( x(t) \)
+
+    L’accélération \( \ddot{x} \) dépend directement de l’inclinaison \( \theta \) :
+
+    \[
+    \Delta \ddot{x} = -g (\Delta \theta + \Delta \phi) = -g\theta \quad \text{(car } \phi = 0\text{)}
+    \]
+
+    Puisque \( \theta \) est **constant**, l’accélération \( \ddot{x}(t) \) est **constante** :
+
+    \[
+    \ddot{x}(t) = -g \theta_0 \quad \Rightarrow \quad x(t) = -\frac{1}{2} g \theta_0 t^2
+    \]
+
+    Donc le mobile **accélère latéralement** de manière **quadratique**, à cause de l’inclinaison initiale de la nacelle.
+
+
+    Pour conclure;
+
+    Le système est initialement incliné \( (\theta_0 > 0) \), mais sans contrôle actif \( (\phi = 0) \), donc :
+
+    - La nacelle **penche** mais ne se **redresse pas**
+    - L’inclinaison \( \theta(t) \) reste figée
+    - La plateforme glisse sous l’effet de la gravité, d’où \( x(t) \) croît en valeur absolue avec le temps
+
 
 
     """
