@@ -1106,6 +1106,84 @@ def _(mo):
     return
 
 
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+     Forme Standard (Espace d'État)
+
+    Pour obtenir la forme standard \( \dot{X} = A X + B U \) du modèle linéarisé, on définit :
+
+    ---
+
+    ###  Vecteur d'état \( X \) :
+    \[
+    X = \begin{bmatrix}
+    \Delta x \\
+    \Delta y \\
+    \Delta \theta \\
+    \Delta \dot{x} \\
+    \Delta \dot{y} \\
+    \Delta \dot{\theta}
+    \end{bmatrix}
+    \]
+
+    ###  Vecteur d'entrée \( U \) :
+    \[
+    U = \begin{bmatrix}
+    \Delta f \\
+    \Delta \varphi
+    \end{bmatrix}
+    \]
+
+    ---
+
+    ##  Équations linéarisées
+
+    \[
+    \begin{aligned}
+    \Delta \ddot{x} &= -g \Delta \theta - g \Delta \varphi \\
+    \Delta \ddot{y} &= \frac{1}{M} \Delta f \\
+    \Delta \ddot{\theta} &= -\frac{3g}{\ell} \Delta \varphi
+    \end{aligned}
+    \]
+
+    ---
+
+    ##  Matrices \( A \) et \( B \)
+
+    ### Matrice \( A \in \mathbb{R}^{6 \times 6} \) :
+
+    \[
+    A = \begin{bmatrix}
+    0 & 0 & 0 & 1 & 0 & 0 \\
+    0 & 0 & 0 & 0 & 1 & 0 \\
+    0 & 0 & 0 & 0 & 0 & 1 \\
+    0 & 0 & -g & 0 & 0 & 0 \\
+    0 & 0 & 0 & 0 & 0 & 0 \\
+    0 & 0 & 0 & 0 & 0 & 0
+    \end{bmatrix}
+    \]
+
+    ### Matrice \( B \in \mathbb{R}^{6 \times 2} \) :
+
+    \[
+    B = \begin{bmatrix}
+    0 & 0 \\
+    0 & 0 \\
+    0 & 0 \\
+    0 & -g \\
+    \frac{1}{M} & 0 \\
+    0 & -\frac{3g}{\ell}
+    \end{bmatrix}
+    \]
+
+
+    """
+    )
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(
@@ -1113,6 +1191,41 @@ def _(mo):
     ## 🧩 Stability
 
     Is the generic equilibrium asymptotically stable?
+    """
+    )
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+    Analyse de Stabilité du Système Linéarisé
+
+    Pour déterminer si l'équilibre \((\theta = 0, \phi = 0, f = Mg)\) est asymptotiquement stable, nous analysons les valeurs propres de la matrice \(A\) du système linéarisé.
+
+    1. Matrice \(A\) du système linéarisé :
+
+    \[
+    A = \begin{bmatrix}
+    0 & 0 & 0 & 1 & 0 & 0 \\
+    0 & 0 & 0 & 0 & 1 & 0 \\
+    0 & 0 & 0 & 0 & 0 & 1 \\
+    0 & 0 & -g & 0 & 0 & 0 \\
+    0 & 0 & 0 & 0 & 0 & 0 \\
+    0 & 0 & 0 & 0 & 0 & 0
+    \end{bmatrix}
+    \]
+
+    Les valeurs propres \(\lambda\) sont solutions de \(\det(A - \lambda I) = 0\).  
+    On obtient :
+
+    \[
+    \lambda^4 (\lambda^2 + g) = 0 \implies \lambda \in \{0, 0, 0, 0, +i\sqrt{g}, -i\sqrt{g}\}.
+    \]
+
+    Aucune valeur propre n'a une partie réelle strictement négative.  
+    Donc l'équilibre \((\theta = 0, \phi = 0, f = Mg)\) n'est pas asymptotiquement stable.
     """
     )
     return
@@ -1127,6 +1240,12 @@ def _(mo):
     Is the linearized model controllable?
     """
     )
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r""" """)
     return
 
 
