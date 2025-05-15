@@ -966,27 +966,27 @@ def _(mo):
     Nous cherchons les états d'équilibre du système sous les hypothèses suivantes :
 
     - \( |\theta| < \frac{\pi}{2} \)
-    - \( |\varphi| < \frac{\pi}{2} \)
+    - \( |\phi| < \frac{\pi}{2} \)
     - \( f > 0 \)
-    - \( f \), \( \varphi \) constants
+    - \( f \), \( \phi \) constants
 
     ---
     On rappel les équations suivantes:
 
     1. **Mouvement horizontal** :
- 
+
     \[  
     \ddot{x} = -f \sin(\theta + \phi)
     \]
 
     3. **Mouvement vertical** :
-   
+
     \[
     M \ddot{y} = f \cos(\theta + \phi) - Mg
     \]
 
     5. **Rotation** :
-   
+
     \[
     J \ddot{\theta} = -l f \sin(\phi)
     \]
@@ -1020,7 +1020,6 @@ def _(mo):
     \[
     f = Mg, \quad \phi = 0
     \]
-
     """
     )
     return
@@ -1055,7 +1054,7 @@ def _(mo):
     y &= y_{\text{eq}} + \Delta y \\
     \theta &= 0 + \Delta \theta \\
     f &= Mg + \Delta f \\
-    \varphi &= 0 + \Delta \varphi
+    \phi &= 0 + \Delta \phi
     \end{aligned}
     $$
 
@@ -1063,9 +1062,9 @@ def _(mo):
 
     $$
     \begin{aligned}
-    \sin(\theta + \varphi) &\approx \theta + \varphi \\
-    \cos(\theta + \varphi) &\approx 1 \\
-    \sin(\varphi) &\approx \varphi
+    \sin(\theta + \phi) &\approx \theta + \phi \\
+    \cos(\theta + \phi) &\approx 1 \\
+    \sin(\phi) &\approx \phi
     \end{aligned}
     $$
 
@@ -1073,9 +1072,9 @@ def _(mo):
 
     $$
     \begin{cases}
-    M \ddot{\Delta x} = -(Mg+\Delta f)(\Delta \theta + \Delta \varphi) \\
+    M \ddot{\Delta x} = -(Mg+\Delta f)(\Delta \theta + \Delta \phi) \\
     M \ddot{\Delta y} = \Delta f \\
-    J \ddot{\Delta \theta} = -L Mg \Delta \varphi
+    J \ddot{\Delta \theta} = -l Mg \Delta \phi
     \end{cases}
     $$
 
@@ -1083,9 +1082,9 @@ def _(mo):
 
     $$
     \begin{cases}
-     \ddot{\Delta x} = -g(\Delta \theta + \Delta \varphi) \\
+     \ddot{\Delta x} = -g(\Delta \theta + \Delta \phi) \\
     M \ddot{\Delta y} = \Delta f \\
-    J \ddot{\Delta \theta} = -L Mg \Delta \varphi
+    J \ddot{\Delta \theta} = -l Mg \Delta \phi
     \end{cases}
     $$
     """
@@ -1110,75 +1109,67 @@ def _(mo):
 def _(mo):
     mo.md(
         r"""
-     Forme Standard 
+    Forme Standard 
 
     Pour obtenir la forme standard \( \dot{X} = A X + B U \) du modèle linéarisé, on définit :
 
     ---
 
-    ###  Vecteur d'état \( X \) :
-    \[
+
+    $$
     X = \begin{bmatrix}
     \Delta x \\
-    \Delta y \\
-    \Delta \theta \\
     \Delta \dot{x} \\
+    \Delta y \\
     \Delta \dot{y} \\
+    \Delta \theta \\
     \Delta \dot{\theta}
-    \end{bmatrix}
-    \]
-
-    ###  Vecteur d'entrée \( U \) :
-    \[
+    \end{bmatrix}, \quad
     U = \begin{bmatrix}
     \Delta f \\
     \Delta \varphi
     \end{bmatrix}
-    \]
-
-    ---
+    $$
 
     ##  Équations linéarisées
 
-    \[
+    $$
     \begin{aligned}
     \Delta \ddot{x} &= -g \Delta \theta - g \Delta \varphi \\
     \Delta \ddot{y} &= \frac{1}{M} \Delta f \\
     \Delta \ddot{\theta} &= -\frac{3g}{\ell} \Delta \varphi
     \end{aligned}
-    \]
+    $$
 
     ---
 
-    ##  Matrices \( A \) et \( B \)
-
-    ### Matrice \( A \in \mathbb{R}^{6 \times 6} \) :
+    ## Matrix A
 
     \[
     A = \begin{bmatrix}
+    0 & 1 & 0 & 0 & 0 & 0 \\
+    0 & 0 & 0 & 0 & -g & 0 \\
     0 & 0 & 0 & 1 & 0 & 0 \\
-    0 & 0 & 0 & 0 & 1 & 0 \\
-    0 & 0 & 0 & 0 & 0 & 1 \\
-    0 & 0 & -g & 0 & 0 & 0 \\
     0 & 0 & 0 & 0 & 0 & 0 \\
+    0 & 0 & 0 & 0 & 0 & 1 \\
     0 & 0 & 0 & 0 & 0 & 0
     \end{bmatrix}
     \]
 
-    ### Matrice \( B \in \mathbb{R}^{6 \times 2} \) :
+    ---
+
+    ## Matrix B
 
     \[
     B = \begin{bmatrix}
     0 & 0 \\
-    0 & 0 \\
-    0 & 0 \\
     0 & -g \\
+    0 & 0 \\
     \frac{1}{M} & 0 \\
+    0 & 0 \\
     0 & -\frac{3g}{\ell}
     \end{bmatrix}
     \]
-
-
     """
     )
     return
@@ -1188,21 +1179,21 @@ def _(mo):
 def _(M, g, l, np):
     # Matrice A
     A = np.array([
+        [0, 1, 0, 0, 0, 0],
+        [0, 0, 0, 0, -g, 0],
         [0, 0, 0, 1, 0, 0],
-        [0, 0, 0, 0, 1, 0],
-        [0, 0, 0, 0, 0, 1],
-        [0, 0, -g, 0, 0, 0],
         [0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 1],
         [0, 0, 0, 0, 0, 0]
     ])
 
     # Matrice B
     B = np.array([
         [0, 0],
-        [0, 0],
-        [0, 0],
         [0, -g],
+        [0, 0],
         [1/M, 0],
+        [0, 0],
         [0, -3*g/l]
     ])
     return A, B
@@ -1232,24 +1223,29 @@ def _(mo):
 
     \[
     A = \begin{bmatrix}
+    0 & 1 & 0 & 0 & 0 & 0 \\
+    0 & 0 & 0 & 0 & -g & 0 \\
     0 & 0 & 0 & 1 & 0 & 0 \\
-    0 & 0 & 0 & 0 & 1 & 0 \\
-    0 & 0 & 0 & 0 & 0 & 1 \\
-    0 & 0 & -g & 0 & 0 & 0 \\
     0 & 0 & 0 & 0 & 0 & 0 \\
+    0 & 0 & 0 & 0 & 0 & 1 \\
     0 & 0 & 0 & 0 & 0 & 0
     \end{bmatrix}
     \]
+
 
     Les valeurs propres \(\lambda\) sont solutions de \(\det(A - \lambda I) = 0\).  
     On obtient :
 
     \[
-    \lambda^4 (\lambda^2 + g) = 0 \implies \lambda \in \{0, 0, 0, 0, +i\sqrt{g}, -i\sqrt{g}\}.
+    \lambda^6 = 0 \Rightarrow \lambda \in \{0, 0, 0, 0, 0, 0\}
     \]
 
-    Aucune valeur propre n'a une partie réelle strictement négative.  
-    Donc l'équilibre \((\theta = 0, \phi = 0, f = Mg)\) n'est pas asymptotiquement stable.
+    ---
+
+
+
+    Toutes les valeurs propres sont nulles. Alors, le système est : **Non asymptotiquement stable**.
+
     """
     )
     return
