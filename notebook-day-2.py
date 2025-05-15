@@ -1410,7 +1410,7 @@ def _(KCM, g, l, matrix_rank, np):
     rank_red = matrix_rank(C_red)
 
     print("Rang de C_red :", rank_red)
-    return
+    return A_red, B_red
 
 
 @app.cell(hide_code=True)
@@ -1653,6 +1653,50 @@ def _(mo):
     return
 
 
+@app.cell
+def _(mo):
+    mo.md(r""" """)
+    return
+
+
+@app.cell
+def _(A_red, B_red, np, plt, scipy):
+    def solve_linear_manual(t_span, y0, A_cl):
+        def linear_dynamics(t, y):
+            return A_cl @ y
+        sol = scipy.integrate.solve_ivp(linear_dynamics, t_span, y0, dense_output=True)
+        return sol.sol
+
+
+    K_manual = np.array([0, 0, -1/75, -2/15]) 
+
+
+    delta_zlat0 = np.array([0.0, 0.0, np.pi/4, 0.0])
+    t_span_manual = [0.0, 30.0]
+    t_manual = np.linspace(t_span_manual[0], t_span_manual[1], 300)
+
+
+    A_cl_manual = A_red - B_red @ K_manual.reshape(1, -1)
+
+    sol_manual = solve_linear_manual(t_span_manual, delta_zlat0, A_cl_manual)
+    delta_zlat_t = sol_manual(t_manual)
+
+    delta_theta_t = delta_zlat_t[2]
+    delta_dtheta_t = delta_zlat_t[3]
+    delta_phi_t = - K_manual @ delta_zlat_t
+
+    fig_manual_final, axes_manual_final = plt.subplots(3, 1, figsize=(9, 8), sharex=True)
+    axes_manual_final[0].plot(t_manual, delta_theta_t, label=r"$\Delta\theta(t)$ (rad)")
+    axes_manual_final[0].plot(t_manual, np.zeros_like(t_manual), color="grey", ls="--")
+    axes_manual_final[0].plot(t_manual, np.full_like(t_manual, np.pi/2), color="red", ls=":", label=r"$+\pi/2$")
+    axes_manual_final[0].plot(t_manual, np.full_like(t_manual, -np.pi/2), color="red", ls=":", label=r"$-\pi/2$")
+
+
+
+
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(
@@ -1695,6 +1739,115 @@ def _(mo):
     return
 
 
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+
+    Le système linéarisé est :
+
+    \[
+    \dot{X} = A X + B \Delta \phi, \quad X = 
+    \begin{bmatrix}
+    \Delta x \\
+    \Delta \dot{x} \\
+    \Delta \theta \\
+    \Delta \dot{\theta}
+    \end{bmatrix}
+    \]
+
+    avec :
+
+    \[
+    A = 
+    \begin{bmatrix} 
+    0 & 1 & 0 & 0 \\ 
+    0 & 0 & -g & 0 \\ 
+    0 & 0 & 0 & 1 \\ 
+    0 & 0 & 0 & 0 
+    \end{bmatrix}, \quad 
+    B = 
+    \begin{bmatrix} 
+    0 \\ 
+    -g \\ 
+    0 \\ 
+    -\frac{3g}{\ell}
+    \end{bmatrix}
+    \]
+
+     Placement des pôles
+
+    Le temps de réponse est approximativement :
+
+    \[
+    \text{Temps de réponse} \approx \frac{4}{|\text{Re(pôle)}|}
+    \]
+    Donc, pour un pôle à \(-0{,}2\), on a :
+    \[
+    \frac{4}{0.2} = 20 \text{ secondes}
+    \]
+
+    Nous choisissons les pôles :
+    - Deux pôles à \(-0.2\) (pôle double) pour accélérer la convergence sans oscillation,
+    - Un à \(-0.3\),
+    - Un à \(-0.4\),
+
+    Le polynôme caractéristique désiré est donc :
+
+    \[
+    (s + 0.2)^2 (s + 0.3) (s + 0.4) = s^4 + 1.1s^3 + 0.46s^2 + 0.076s + 0.0048
+    \]
+
+     Calcul de \( K_{pp} \)
+
+    La dynamique en boucle fermée devient :
+
+    \[
+    \dot{X} = (A - B K_{pp}) X
+    \]
+
+    On veut :
+
+    \[
+    \text{det}(sI - (A - B K_{pp})) = s^4 + 1.1s^3 + 0.46s^2 + 0.076s + 0.0048
+    \]
+
+    En résolvant, on obtient :
+
+    \[
+    K_{pp} = 
+    \begin{bmatrix}
+    -0.0012 & -0.012 & 0.0008 & 0.0096
+    \end{bmatrix}
+    \]
+
+    """
+    )
+    return
+
+
+@app.cell
+def _(g, l, np):
+    from scipy.signal import place_poles
+
+    A1 = np.array([
+        [0, 1, 0, 0],
+        [0, 0, -g, 0],
+        [0, 0, 0, 1],
+        [0, 0, 0, 0]
+    ])
+    B1 = np.array([[0], [-g], [0], [-3*g/l]])
+
+    # Pôles désirés
+    poles = [-0.19, -0.2, -0.3, -0.4]  # Pôles distincts mais proches de -0.2
+
+
+    # Placement de pôles
+    K_pp = place_poles(A1, B1, poles).gain_matrix
+    print("K_pp =", K_pp)
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(
@@ -1706,6 +1859,32 @@ def _(mo):
     Explain how you find the proper design parameters!
     """
     )
+    return
+
+
+@app.cell
+def _(g, l, np):
+    from scipy.linalg import solve_continuous_are
+
+    # System matrices (g=1, l=1)
+    A3 = np.array([
+        [0, 1, 0, 0],
+        [0, 0, -g, 0],
+        [0, 0, 0, 1],
+        [0, 0, 0, 0]
+    ])
+    B3 = np.array([[0], [-g], [0], [-3*g/l]])
+
+    # LQR weights
+    Q = np.diag([1, 1, 10, 10])  # Prioritize angle stabilization
+    R1 = 1.0  # Scalar
+
+    # Solve Riccati equation
+    P = solve_continuous_are(A3, B3, Q, R1)
+
+    # Compute optimal gain
+    K_oc = B3.T @ P  # Or (1/R) * B.T @ P
+    print("Optimal gain K_oc =", K_oc)
     return
 
 
