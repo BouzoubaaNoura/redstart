@@ -1615,7 +1615,7 @@ def _(
         return output
 
     mo.video(src=video_sim_Koc())
-    return (video_sim_Koc,)
+    return
 
 
 @app.cell(hide_code=True)
@@ -2288,14 +2288,12 @@ def _(
     fps,
     g,
     l,
-    mo,
     np,
     output,
     pbar,
     plt,
     tqdm,
     ts,
-    video_sim_Koc,
 ):
 
 
@@ -2376,14 +2374,12 @@ def _(
         anim = FuncAnimation(fig, animate, frames=ts)
         writer = FFMpegWriter(fps=fps)
         anim.save(output, writer=writer)
-        print()
-    
-        return booster_line, path_line
+  
 
     ani = FuncAnimation(fig, animate, frames=len(t_vals), interval=50)
 
 
-    mo.video(src=video_sim_Koc())
+
 
     plt.tight_layout()
     plt.show()
