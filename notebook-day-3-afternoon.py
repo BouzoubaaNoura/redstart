@@ -2031,6 +2031,109 @@ def _(mo):
     return
 
 
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+    Détermination de \(\theta\) et \(\dot{\theta}\)
+    D'après l'expression de \(\ddot{h}\) :
+
+    \[
+    \ddot{h} = \frac{1}{M} \begin{bmatrix} \sin\theta \\ -\cos\theta \end{bmatrix} z - \begin{bmatrix} 0 \\ g \end{bmatrix},
+    \]
+
+    on peut isoler \(\theta\) en calculant le rapport des composantes :
+
+    \[
+    \frac{\ddot{h}_x}{\ddot{h}_y + g} = \frac{\sin\theta}{-\cos\theta} = -\tan\theta.
+    \]
+
+    Donc :
+
+    \[
+    \boxed{\theta = -\arctan\left(\frac{\ddot{h}_x}{\ddot{h}_y + g}\right)}.
+    \]
+
+
+    On remarque que la norme de \(\ddot{h} + [0, g]\) donne \(|z|\) :
+
+    \[
+    z = -M \|\ddot{h} + [0, g]\| \quad (\text{car } z < 0).
+    \]
+
+
+    On a :
+
+    \[
+    h^{(3)} = \frac{1}{M} \begin{bmatrix} \cos\theta & \sin\theta \\ \sin\theta & -\cos\theta \end{bmatrix} \begin{bmatrix} \dot{\theta} z \\ \dot{z} \end{bmatrix}.
+    \]
+
+    Or l'inverse de la matrice $\begin{bmatrix} \cos\theta & \sin\theta \\ \sin\theta & -\cos\theta \end{bmatrix}$ par la méthode de l'inverse via la comatrice est :
+
+    \[
+    A^{-1} = \frac{1}{\det(A)} \begin{bmatrix} -\cos\theta & -\sin\theta \\ -\sin\theta & \cos\theta \end{bmatrix}^\top = (-1) \begin{bmatrix} -\cos\theta & -\sin\theta \\ -\sin\theta & \cos\theta \end{bmatrix} = A.
+    \]
+
+    Par suite l'équation :
+
+    \[
+    h^{(3)} = \frac{1}{M} A \begin{bmatrix} \dot{\theta} z \\ \dot{z} \end{bmatrix},
+    \]
+
+    se résout directement en multipliant des deux côtés par \( A \) (puisque \( A^{-1} = A \)) :
+
+    \[
+    \begin{bmatrix} \dot{\theta} z \\ \dot{z} \end{bmatrix} = M \cdot A \cdot h^{(3)}.
+    \]
+
+    Ainsi on obtient la résolution exacte du système linéaire :
+
+    \[
+    \begin{cases}
+    \dot{\theta} z = M (h^{(3)}_x \cos\theta + h^{(3)}_y \sin\theta), \\
+    \dot{z} = M (h^{(3)}_x \sin\theta - h^{(3)}_y \cos\theta).
+    \end{cases}
+    \]
+
+
+
+
+     Maintenant, on va faire la reconstruction de \((x, y, \dot{x}, \dot{y})\)
+ 
+    - **Positions** :
+  
+    \[
+    x = h_x + \frac{\ell}{3} \sin\theta, \quad y = h_y - \frac{\ell}{3} \cos\theta.
+    \]
+
+    - **Vitesses** :
+  
+    \[
+    \dot{x} = \dot{h}_x + \frac{\ell}{3} \cos\theta \, \dot{\theta}, \quad \dot{y} = \dot{h}_y - \frac{\ell}{3} \sin\theta \, \dot{\theta}.
+    \]
+  
+    """
+    )
+    return
+
+
+@app.cell
+def _(M, g, l, np):
+    def T_inv(h, h_dot, h_ddot, h_3rd):
+        theta = -np.arctan2(h_ddot[0], h_ddot[1] + g)
+        z = -M * np.linalg.norm([h_ddot[0], h_ddot[1] + g])
+        theta_dot_z = M * (h_3rd[0] * np.cos(theta) + h_3rd[1] * np.sin(theta))
+        z_dot = M * (h_3rd[0] * np.sin(theta) - h_3rd[1] * np.cos(theta))
+        theta_dot = theta_dot_z / z
+        x = h[0] + (l/3) * np.sin(theta)
+        y = h[1] - (l/3) * np.cos(theta)
+        x_dot = h_dot[0] + (l/3) * np.cos(theta) * theta_dot
+        y_dot = h_dot[1] - (l/3) * np.sin(theta) * theta_dot
+    
+        return {'x': x, 'y': y,'x_dot': x_dot, 'y_dot': y_dot,'theta': theta, 'theta_dot': theta_dot,'z': z, 'z_dot': z_dot}
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(
@@ -2067,6 +2170,14 @@ def _(mo):
     """
     )
     return
+
+
+app._unparsable_cell(
+    r"""
+    def compute(x_0,dx_0,y_0,dy_0,theta_0,dtheta_0,z_0,dz_0,x_tf,dx_tf,y_tf,dy_tf,theta_tf,dtheta_tf,z_tf,dz_tf,tf):
+    """,
+    name="_"
+)
 
 
 @app.cell(hide_code=True)
