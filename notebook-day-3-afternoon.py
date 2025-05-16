@@ -2287,55 +2287,81 @@ def _():
 @app.cell
 def _(FuncAnimation, M, compute, g, l, np, plt):
 
+
     initial_state = [5.0, 0.0, 20.0, -1.0, -np.pi/8, 0.0, -M*g, 0.0]
     final_state = [0.0, 0.0, 4/3*l, 0.0, 0.0, 0.0, -M*g, 0.0]
     tf = 10.0
 
-    traj = compute(initial_state, final_state, tf)
+    traj = compute(initial_state, final_state, tf)  # Assuming `compute` is defined elsewhere
 
     # Plotting
     t_vals = np.linspace(0, tf, 100)
     states = np.array([traj(t) for t in t_vals])
 
-    plt.figure(figsize=(12,8))
-    plt.subplot(2,2,1)
-    plt.plot(t_vals, states[:,0], label='x(t)')
-    plt.plot(t_vals, states[:,2], label='y(t)')
+    plt.figure(figsize=(14, 10))
+
+    # Subplot 1: x(t) and y(t) vs time
+    plt.subplot(2, 3, 1)
+    plt.plot(t_vals, states[:, 0], label='x(t)')
+    plt.plot(t_vals, states[:, 2], label='y(t)')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Position')
     plt.legend()
 
-    plt.subplot(2,2,2)
-    plt.plot(t_vals, states[:,4]*180/np.pi, label='θ(t) [deg]')
+    # Subplot 2: θ(t) vs time
+    plt.subplot(2, 3, 2)
+    plt.plot(t_vals, states[:, 4] * 180 / np.pi, label='θ(t) [deg]')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Angle (deg)')
     plt.legend()
 
-    plt.subplot(2,2,3)
-    plt.plot(t_vals, states[:,6], label='z(t)')
+    # Subplot 3: z(t) vs time
+    plt.subplot(2, 3, 3)
+    plt.plot(t_vals, states[:, 6], label='z(t)')
+    plt.xlabel('Time (s)')
+    plt.ylabel('z(t)')
     plt.legend()
 
-    plt.subplot(2,2,4)
-    plt.plot(t_vals, states[:,8], label='Thrust f(t)')
+    # Subplot 4: Thrust f(t) vs time
+    plt.subplot(2, 3, 4)
+    plt.plot(t_vals, states[:, 8], label='Thrust f(t)')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Thrust')
     plt.legend()
+
+    # Subplot 5: y vs x (trajectory)
+    plt.subplot(2, 3, 5)
+    plt.plot(states[:, 0], states[:, 2], 'g-', label='Trajectory (y vs x)')
+    plt.xlabel('x(t)')
+    plt.ylabel('y(t)')
+    plt.legend()
+    plt.grid()
 
     # Animation
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(8, 6))
     booster_line, = ax.plot([], [], 'b-', lw=2)
     path_line, = ax.plot([], [], 'r--')
-    ax.set_xlim(-2,6)
-    ax.set_ylim(0,25)
+    ax.set_xlim(-2, 6)
+    ax.set_ylim(0, 25)
+    ax.set_xlabel('x(t)')
+    ax.set_ylabel('y(t)')
+    ax.set_title('Booster Animation')
 
     def animate(i):
         t = t_vals[i]
         x, dx, y, dy, theta, dtheta, z, dz, f, phi = traj(t)
     
         # Booster shape
-        x_vals = [x - l*np.sin(theta), x + l*np.sin(theta)]
-        y_vals = [y - l*np.cos(theta), y + l*np.cos(theta)]
+        x_vals = [x - l * np.sin(theta), x + l * np.sin(theta)]
+        y_vals = [y - l * np.cos(theta), y + l * np.cos(theta)]
         booster_line.set_data(x_vals, y_vals)
     
         # Path
-        path_line.set_data(states[:i,0], states[:i,2])
+        path_line.set_data(states[:i, 0], states[:i, 2])
         return booster_line, path_line
 
     ani = FuncAnimation(fig, animate, frames=len(t_vals), interval=50)
+    plt.tight_layout()
     plt.show()
     return
 
