@@ -1681,6 +1681,54 @@ def _(mo):
     return
 
 
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+    Le point \( h \) représente un point situé à une distance \( \frac{\ell}{3} \) **le long du booster**, dans la direction dépend à celle définie par l'angle \( \theta \).
+
+    """
+    )
+    return
+
+
+@app.cell
+def _(np, plt):
+
+    ell = 1
+    theta = np.pi / 4  
+    x, y = 2, 1  
+
+
+    hx = x - (ell / 3) * np.sin(theta)
+    hy = y + (ell / 3) * np.cos(theta)
+
+
+    dx = (ell / 2) * np.sin(theta)
+    dy = -(ell / 2) * np.cos(theta)
+
+
+    x1, y1 = x - dx, y - dy
+    x2, y2 = x + dx, y + dy
+
+
+    plt.figure(figsize=(6, 6))
+    plt.plot([x1, x2], [y1, y2], 'b-', label='Booster')
+    plt.plot(x, y, 'ko', label='Centre de masse (x, y)')
+    plt.plot(hx, hy, 'ro', label='Point h')
+    plt.text(x, y, '  (x, y)', fontsize=10, verticalalignment='bottom')
+    plt.text(hx, hy, '  h', fontsize=10, color='r', verticalalignment='bottom')
+    plt.axis('equal')
+    plt.grid(True)
+    plt.legend()
+
+    plt.xlabel("x")
+    plt.ylabel("y")
+    plt.show()
+
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(
