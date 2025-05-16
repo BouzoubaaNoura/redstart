@@ -1863,6 +1863,69 @@ def _(mo):
     return
 
 
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+    On a essayer de faire les calculs mais on a pas trouvé le résultat en fonction de ce qui a été demandé; voici les calculs: 
+
+
+
+
+
+    À partir de \(\ddot{h}\) simplifié avec \(\ddot{\theta} = 0\) :
+
+    \[
+    \ddot{h} = \begin{bmatrix}
+    -\frac{z}{M}\sin\theta - \frac{\ell v_2}{3z}\cos\theta + \left(1 - \frac{m}{M}\right)\frac{\ell\dot{\theta}^2}{3}\sin\theta \\
+    \frac{z}{M}\cos\theta - \frac{\ell v_2}{3z}\sin\theta - g - \left(1 - \frac{m}{M}\right)\frac{\ell\dot{\theta}^2}{3}\cos\theta
+    \end{bmatrix},
+    \]
+
+    on dérive chaque composante par rapport au temps :
+
+    \[
+    h^{(3)} = \begin{bmatrix}
+    -\frac{\dot{z}}{M}\sin\theta - \frac{z}{M}\dot{\theta}\cos\theta - \frac{\ell}{3}\left(\frac{\dot{v}_2 z - v_2 \dot{z}}{z^2}\right)\cos\theta + \frac{\ell v_2}{3z}\dot{\theta}\sin\theta + \left(1 - \frac{m}{M}\right)\frac{\ell}{3}(2\dot{\theta}\ddot{\theta}\sin\theta + \dot{\theta}^3\cos\theta) \\
+    \frac{\dot{z}}{M}\cos\theta - \frac{z}{M}\dot{\theta}\sin\theta - \frac{\ell}{3}\left(\frac{\dot{v}_2 z - v_2 \dot{z}}{z^2}\right)\sin\theta - \frac{\ell v_2}{3z}\dot{\theta}\cos\theta - \left(1 - \frac{m}{M}\right)\frac{\ell}{3}(2\dot{\theta}\ddot{\theta}\cos\theta - \dot{\theta}^3\sin\theta)
+    \end{bmatrix}.
+    \]
+
+
+
+    En dérivant \( h^{(3)} \) par rapport au temps :
+
+    \[
+    h^{(4)} = \begin{bmatrix}
+    -\frac{\ddot{z}}{M}\sin\theta - \frac{2\dot{z}}{M}\dot{\theta}\cos\theta - \frac{z}{M}(\ddot{\theta}\cos\theta - \dot{\theta}^2\sin\theta) - \frac{\ell}{3}\left(\frac{(\ddot{v}_2 z + \dot{v}_2 \dot{z} - \dot{v}_2 \dot{z} - v_2 \ddot{z})z^2 - 2z\dot{z}(\dot{v}_2 z - v_2 \dot{z})}{z^4}\right)\cos\theta + \frac{\ell}{3}\left(\frac{(\dot{v}_2 z - v_2 \dot{z})}{z^2}\right)\dot{\theta}\sin\theta + \frac{\ell}{3}\left(\frac{\dot{v}_2 z - v_2 \dot{z}}{z^2}\right)\dot{\theta}\sin\theta + \frac{\ell v_2}{3z}(\ddot{\theta}\sin\theta + \dot{\theta}^2\cos\theta) + \left(1 - \frac{m}{M}\right)\frac{\ell}{3}(2\ddot{\theta}^2\sin\theta + 2\dot{\theta}\theta^{(3)}\sin\theta + 6\dot{\theta}^2\ddot{\theta}\cos\theta - \dot{\theta}^4\sin\theta) \\
+    \frac{\ddot{z}}{M}\cos\theta - \frac{2\dot{z}}{M}\dot{\theta}\sin\theta - \frac{z}{M}(\ddot{\theta}\sin\theta + \dot{\theta}^2\cos\theta) - \frac{\ell}{3}\left(\frac{(\ddot{v}_2 z + \dot{v}_2 \dot{z} - \dot{v}_2 \dot{z} - v_2 \ddot{z})z^2 - 2z\dot{z}(\dot{v}_2 z - v_2 \dot{z})}{z^4}\right)\sin\theta - \frac{\ell}{3}\left(\frac{(\dot{v}_2 z - v_2 \dot{z})}{z^2}\right)\dot{\theta}\cos\theta - \frac{\ell}{3}\left(\frac{\dot{v}_2 z - v_2 \dot{z}}{z^2}\right)\dot{\theta}\cos\theta + \frac{\ell v_2}{3z}(-\ddot{\theta}\cos\theta + \dot{\theta}^2\sin\theta) - \left(1 - \frac{m}{M}\right)\frac{\ell}{3}(2\ddot{\theta}^2\cos\theta + 2\dot{\theta}\theta^{(3)}\cos\theta - 6\dot{\theta}^2\ddot{\theta}\sin\theta - \dot{\theta}^4\cos\theta)
+    \end{bmatrix}.
+    \]
+
+
+
+    Si \(\ddot{\theta} = 0\) et \(\theta^{(3)} = 0\) (vitesse angulaire constante), les expressions se simplifient :
+
+    \[
+    h^{(3)} = \begin{bmatrix}
+    -\frac{\dot{z}}{M}\sin\theta - \frac{z}{M}\dot{\theta}\cos\theta - \frac{\ell}{3}\left(\frac{\dot{v}_2 z - v_2 \dot{z}}{z^2}\right)\cos\theta + \frac{\ell v_2}{3z}\dot{\theta}\sin\theta + \left(1 - \frac{m}{M}\right)\frac{\ell\dot{\theta}^3}{3}\cos\theta \\
+    \frac{\dot{z}}{M}\cos\theta - \frac{z}{M}\dot{\theta}\sin\theta - \frac{\ell}{3}\left(\frac{\dot{v}_2 z - v_2 \dot{z}}{z^2}\right)\sin\theta - \frac{\ell v_2}{3z}\dot{\theta}\cos\theta + \left(1 - \frac{m}{M}\right)\frac{\ell\dot{\theta}^3}{3}\sin\theta
+    \end{bmatrix},
+    \]
+
+    \[
+    h^{(4)} = \begin{bmatrix}
+    -\frac{\ddot{z}}{M}\sin\theta - \frac{2\dot{z}}{M}\dot{\theta}\cos\theta + \frac{z}{M}\dot{\theta}^2\sin\theta - \frac{\ell}{3}\left(\frac{\ddot{v}_2 z^2 - 2\dot{v}_2 z \dot{z} - v_2 \ddot{z} z + 2 v_2 \dot{z}^2}{z^3}\right)\cos\theta + \frac{2\ell}{3}\left(\frac{\dot{v}_2 z - v_2 \dot{z}}{z^2}\right)\dot{\theta}\sin\theta + \frac{\ell v_2}{3z}\dot{\theta}^2\cos\theta - \left(1 - \frac{m}{M}\right)\frac{\ell\dot{\theta}^4}{3}\sin\theta \\
+    \frac{\ddot{z}}{M}\cos\theta - \frac{2\dot{z}}{M}\dot{\theta}\sin\theta - \frac{z}{M}\dot{\theta}^2\cos\theta - \frac{\ell}{3}\left(\frac{\ddot{v}_2 z^2 - 2\dot{v}_2 z \dot{z} - v_2 \ddot{z} z + 2 v_2 \dot{z}^2}{z^3}\right)\sin\theta - \frac{2\ell}{3}\left(\frac{\dot{v}_2 z - v_2 \dot{z}}{z^2}\right)\dot{\theta}\cos\theta - \frac{\ell v_2}{3z}\dot{\theta}^2\sin\theta + \left(1 - \frac{m}{M}\right)\frac{\ell\dot{\theta}^4}{3}\cos\theta
+    \end{bmatrix}.
+    \]
+
+
+    """
+    )
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(
