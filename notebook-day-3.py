@@ -309,6 +309,7 @@ def _(mo):
     $$
     J \ddot{\theta} = - \ell (\sin \phi)  f
     $$
+
     """
     )
     return
@@ -1683,12 +1684,7 @@ def _(mo):
 
 @app.cell
 def _(mo):
-    mo.md(
-        r"""
-    Le point \( h \) représente un point situé à une distance \( \frac{\ell}{3} \) **le long du booster**, dans la direction dépend à celle définie par l'angle \( \theta \).
-
-    """
-    )
+    mo.md(r"""Le point \( h \) représente un point situé à une distance \( \frac{\ell}{3} \) **le long du booster**, dans la direction dépend à celle définie par l'angle \( \theta \).""")
     return
 
 
@@ -1736,6 +1732,120 @@ def _(mo):
     ## 🧩 First and Second-Order Derivatives
 
     Compute $\dot{h}$ as a function of $\dot{x}$, $\dot{y}$, $\theta$ and $\dot{\theta}$ (and constants) and then $\ddot{h}$ as a function of $\theta$ and $z$ (and constants) when the auxiliary system is plugged in the booster.
+    """
+    )
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+    Définition de h
+
+    \[
+    h :=
+    \begin{bmatrix}
+    x - \frac{\ell}{3} \sin \theta \\
+    y + \frac{\ell}{3} \cos \theta
+    \end{bmatrix}
+    \]
+
+
+
+    Donc;
+
+    \[
+    \dot{h} =
+    \begin{bmatrix}
+    \dot{x} - \frac{\ell}{3} \cos \theta \cdot \dot{\theta} \\
+    \dot{y} - \frac{\ell}{3} \sin \theta \cdot \dot{\theta}
+    \end{bmatrix}
+    \]
+
+
+
+    Or  \( \ddot{\theta} = 0 \)  (car $\phi$ =0) donc;
+
+    \[
+    \ddot{h} =
+    \begin{bmatrix}
+    \ddot{x} - \frac{\ell}{3} ( - \sin \theta \cdot \dot{\theta}^2 ) \\
+    \ddot{y} - \frac{\ell}{3} ( \cos \theta \cdot \dot{\theta}^2 )
+    \end{bmatrix}
+    =
+    \begin{bmatrix}
+    \ddot{x} + \frac{\ell}{3} \sin \theta \cdot \dot{\theta}^2 \\
+    \ddot{y} - \frac{\ell}{3} \cos \theta \cdot \dot{\theta}^2
+    \end{bmatrix}
+    \]
+
+
+
+    On rappel
+
+    \[
+    \begin{aligned}
+    M\ddot{x} &= f_x \\
+    M\ddot{y} &= f_y - Mg \\
+    \end{aligned}
+    \]
+
+    et 
+
+    $$
+    \begin{bmatrix}
+    f_x \\
+    f_y
+    \end{bmatrix}
+    = R\left(\theta + \frac{\pi}{2}\right) 
+    \begin{bmatrix}
+    z + m \ell \dot{\theta}^2 / 3 \\
+    ml v_2 / 3 z
+    \end{bmatrix} 
+    $$ 
+
+
+    Alors;
+
+    \[
+    \ddot{h}_1 = \frac{f_x}{M} + \frac{\ell}{3}\sin\theta \dot{\theta}^2 
+    \]
+
+    \[
+    = \frac{1}{M}\left[ -\sin\theta \left(z + \frac{m\ell\dot{\theta}^2}{3}\right) - \cos\theta \left(\frac{m\ell v_2}{3z}\right) \right] + \frac{\ell}{3}\sin\theta \dot{\theta}^2 
+    \]
+
+
+
+
+
+    \[
+    \ddot{h}_2 = \frac{f_y}{M} - g - \frac{\ell}{3}\cos\theta \dot{\theta}^2 
+    \]
+
+    \[
+    = \frac{1}{M}\left[ \cos\theta \left(z + \frac{m\ell\dot{\theta}^2}{3}\right) - \sin\theta \left(\frac{m\ell v_2}{3z}\right) \right] - g - \frac{\ell}{3}\cos\theta \dot{\theta}^2 
+    \]
+
+
+    Par suite;
+
+    \[
+    \ddot{h} =
+    \begin{bmatrix}
+    - \frac{z}{M} \sin\theta 
+    - \frac{\ell m}{3M} \sin\theta \cdot \dot{\theta}^2 
+    - \frac{\ell m v_2}{3zM} \cos\theta 
+    + \frac{\ell}{3} \sin\theta \cdot \dot{\theta}^2 \\
+    \\
+    \frac{z}{M} \cos\theta 
+    + \frac{\ell m}{3M} \cos\theta \cdot \dot{\theta}^2 
+    - \frac{\ell m v_2}{3zM} \sin\theta 
+    - g 
+    - \frac{\ell}{3} \cos\theta \cdot \dot{\theta}^2
+    \end{bmatrix}
+    \]
     """
     )
     return
