@@ -2257,7 +2257,8 @@ def _(M, g, l, np):
             return (*y, np.sqrt(f_x**2 + f_y**2), phi)
     
         return fun
-    return
+    
+    return (compute,)
 
 
 @app.cell(hide_code=True)
@@ -2275,6 +2276,67 @@ def _(mo):
     Make the graph of the relevant variables as a function of time, then make a video out of the same result. Comment and iterate if necessary!
     """
     )
+    return
+
+
+@app.cell
+def _():
+    return
+
+
+@app.cell
+def _(FuncAnimation, M, compute, g, l, np, plt):
+
+    initial_state = [5.0, 0.0, 20.0, -1.0, -np.pi/8, 0.0, -M*g, 0.0]
+    final_state = [0.0, 0.0, 4/3*l, 0.0, 0.0, 0.0, -M*g, 0.0]
+    tf = 10.0
+
+    traj = compute(initial_state, final_state, tf)
+
+    # Plotting
+    t_vals = np.linspace(0, tf, 100)
+    states = np.array([traj(t) for t in t_vals])
+
+    plt.figure(figsize=(12,8))
+    plt.subplot(2,2,1)
+    plt.plot(t_vals, states[:,0], label='x(t)')
+    plt.plot(t_vals, states[:,2], label='y(t)')
+    plt.legend()
+
+    plt.subplot(2,2,2)
+    plt.plot(t_vals, states[:,4]*180/np.pi, label='θ(t) [deg]')
+    plt.legend()
+
+    plt.subplot(2,2,3)
+    plt.plot(t_vals, states[:,6], label='z(t)')
+    plt.legend()
+
+    plt.subplot(2,2,4)
+    plt.plot(t_vals, states[:,8], label='Thrust f(t)')
+    plt.legend()
+
+    # Animation
+    fig, ax = plt.subplots()
+    booster_line, = ax.plot([], [], 'b-', lw=2)
+    path_line, = ax.plot([], [], 'r--')
+    ax.set_xlim(-2,6)
+    ax.set_ylim(0,25)
+
+    def animate(i):
+        t = t_vals[i]
+        x, dx, y, dy, theta, dtheta, z, dz, f, phi = traj(t)
+    
+        # Booster shape
+        x_vals = [x - l*np.sin(theta), x + l*np.sin(theta)]
+        y_vals = [y - l*np.cos(theta), y + l*np.cos(theta)]
+        booster_line.set_data(x_vals, y_vals)
+    
+        # Path
+        path_line.set_data(states[:i,0], states[:i,2])
+        return booster_line, path_line
+
+    ani = FuncAnimation(fig, animate, frames=len(t_vals), interval=50)
+    plt.show()
     return
 
 
