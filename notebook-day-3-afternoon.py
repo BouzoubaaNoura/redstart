@@ -1995,14 +1995,14 @@ def _(mo):
 
 
 @app.cell
-def _(M, g, l, np, thata):
+def _(M, g, l, np):
     def T(x,dx,y,dy,theta,dtheta,z,dz):
     
         h_x= x-(ℓ/3)*np.sin(theta)
         h_y= y+(ℓ/3)*np.cos(theta)
     
-        dh_x=dx - (ℓ / 3) * np.cos(thata) * dtheta
-        dh_y = dy - (ℓ / 3) * np.sin(thata) * dtheta
+        dh_x=dx - (ℓ / 3) * np.cos(theta) * dtheta
+        dh_y = dy - (ℓ / 3) * np.sin(theta) * dtheta
     
         d2h_x = 1/M *np.sin(theta)*z
         d2h_y = -1/M * np.cos(theta)*z-g
@@ -2013,7 +2013,7 @@ def _(M, g, l, np, thata):
         return h_x, h_y, dh_x, dh_y, d2h_x, d2h_y, d3h_x, d3h_y
 
     
-    return
+    return (T,)
 
 
 @app.cell(hide_code=True)
@@ -2099,19 +2099,18 @@ def _(mo):
 
 
      Maintenant, on va faire la reconstruction de \((x, y, \dot{x}, \dot{y})\)
- 
+
     - **Positions** :
-  
+
     \[
     x = h_x + \frac{\ell}{3} \sin\theta, \quad y = h_y - \frac{\ell}{3} \cos\theta.
     \]
 
     - **Vitesses** :
-  
+
     \[
-    \dot{x} = \dot{h}_x + \frac{\ell}{3} \cos\theta \, \dot{\theta}, \quad \dot{y} = \dot{h}_y - \frac{\ell}{3} \sin\theta \, \dot{\theta}.
+    \dot{x} = \dot{h}_x + \frac{\ell}{3} \cos\theta \, \dot{\theta}, \quad \dot{y} = \dot{h}_y + \frac{\ell}{3} \sin\theta \, \dot{\theta}.
     \]
-  
     """
     )
     return
@@ -2119,18 +2118,42 @@ def _(mo):
 
 @app.cell
 def _(M, g, l, np):
-    def T_inv(h, h_dot, h_ddot, h_3rd):
-        theta = -np.arctan2(h_ddot[0], h_ddot[1] + g)
-        z = -M * np.linalg.norm([h_ddot[0], h_ddot[1] + g])
-        theta_dot_z = M * (h_3rd[0] * np.cos(theta) + h_3rd[1] * np.sin(theta))
-        z_dot = M * (h_3rd[0] * np.sin(theta) - h_3rd[1] * np.cos(theta))
+    def T_inv(h_x, h_y, dh_x, dh_y, d2h_x, d2h_y, d3h_x, d3h_y):
+        theta = -np.arctan2( d2h_x, d2h_y + g)
+        z = -M * np.linalg.norm([d2h_x, d2h_y + g])
+        theta_dot_z = M * (d3h_x * np.cos(theta) + d3h_y * np.sin(theta))
+        z_dot = M * (d3h_x * np.sin(theta) - d3h_y * np.cos(theta))
         theta_dot = theta_dot_z / z
-        x = h[0] + (l/3) * np.sin(theta)
-        y = h[1] - (l/3) * np.cos(theta)
-        x_dot = h_dot[0] + (l/3) * np.cos(theta) * theta_dot
-        y_dot = h_dot[1] - (l/3) * np.sin(theta) * theta_dot
+        x = h_x + (l/3) * np.sin(theta)
+        y = h_y- (l/3) * np.cos(theta)
+        x_dot = dh_x + (l/3) * np.cos(theta) * theta_dot
+        y_dot = dh_y + (l/3) * np.sin(theta) * theta_dot
     
         return {'x': x, 'y': y,'x_dot': x_dot, 'y_dot': y_dot,'theta': theta, 'theta_dot': theta_dot,'z': z, 'z_dot': z_dot}
+    
+    return (T_inv,)
+
+
+@app.cell
+def _(T, T_inv):
+    # Valeurs initiales
+    x = 1.2
+    dx = 0.5
+    y = -0.8
+    dy = -0.3
+    theta = 0.4
+    dtheta = -0.2
+    z = -2.0
+    dz = 0.1
+
+    # Appliquer T
+    hx,hy, h_dotx,hdoty,hddotx,hddoty, h_3rdx,her = T(x, dx, y, dy, theta, dtheta, z, dz)
+
+    # Appliquer T⁻¹
+    res = T_inv(hx,hy, h_dotx,hdoty,hddotx,hddoty, h_3rdx,her)
+
+    print(res)
+
     return
 
 
@@ -2172,12 +2195,69 @@ def _(mo):
     return
 
 
-app._unparsable_cell(
-    r"""
-    def compute(x_0,dx_0,y_0,dy_0,theta_0,dtheta_0,z_0,dz_0,x_tf,dx_tf,y_tf,dy_tf,theta_tf,dtheta_tf,z_tf,dz_tf,tf):
-    """,
-    name="_"
-)
+@app.cell
+def _(M, g, l, np):
+    from scipy.integrate import solve_ivp
+    from scipy.optimize import minimize
+
+    def compute(initial_state, final_state, tf):
+        """Compute trajectory between initial and final states."""
+        # Boundary conditions
+        y0 = np.array(initial_state)
+        yf = np.array(final_state)
+    
+        def dynamics(t, y, u):
+            x, dx, y, dy, theta, dtheta, z, dz = y
+            u1, u2 = u(t)
+        
+            # Auxiliary system dynamics
+            ddz = u1
+            v2 = u2 * z  # Maintain z < 0
+        
+            # Booster dynamics
+            f_x = -(z - M*l*dtheta**2/3)*np.sin(theta) - (M*l*v2)/(3*z)*np.cos(theta)
+            f_y = (z - M*l*dtheta**2/3)*np.cos(theta) - (M*l*v2)/(3*z)*np.sin(theta)
+        
+            d2x = f_x / M
+            d2y = f_y / M - g
+            ddtheta = (3/(M*l))*(f_x*np.cos(theta) + f_y*np.sin(theta))
+        
+            return [dx, d2x, dy, d2y, dtheta, ddtheta, dz, ddz]
+    
+        def objective(u_coeffs):
+            # Parameterize control as polynomial
+            def u(t):
+                tau = t/tf
+                u1 = np.polyval(u_coeffs[:4], tau)
+                u2 = np.polyval(u_coeffs[4:], tau)
+                return [u1, u2]
+        
+            sol = solve_ivp(lambda t,y: dynamics(t,y,u), [0,tf], y0, t_eval=np.linspace(0,tf,100))
+            error = np.sum((sol.y[:,-1] - yf)**2)
+            return error
+    
+        # Optimize control parameters
+        res = minimize(objective, np.zeros(8))
+    
+        # Return interpolated solution
+        def u_opt(t):
+            tau = t/tf
+            u1 = np.polyval(res.x[:4], tau)
+            u2 = np.polyval(res.x[4:], tau)
+            return [u1, u2]
+    
+        sol = solve_ivp(lambda t,y: dynamics(t,y,u_opt), [0,tf], y0, dense_output=True)
+    
+        def fun(t):
+            y = sol.sol(t)
+            u = u_opt(t)
+            f_x = -(y[6] - M*l*y[5]**2/3)*np.sin(y[4]) - (M*l*u[1]*y[6])/(3*y[6])*np.cos(y[4])
+            f_y = (y[6] - M*l*y[5]**2/3)*np.cos(y[4]) - (M*l*u[1]*y[6])/(3*y[6])*np.sin(y[4])
+            phi = np.arctan2(f_x, f_y) - y[4]
+            return (*y, np.sqrt(f_x**2 + f_y**2), phi)
+    
+        return fun
+    return
 
 
 @app.cell(hide_code=True)
